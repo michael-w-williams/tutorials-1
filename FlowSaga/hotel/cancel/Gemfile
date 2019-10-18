@@ -1,0 +1,4 @@
+source 'https://rubygems.org' do
+  gem 'fdk', '>= 0.0.18'
+  gem 'httpclient'
+end
