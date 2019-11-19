@@ -1,23 +1,40 @@
 # Use of Contexts
 
-The Fn context stores configuration information about your functions where your Docker images are stored. You can configure multiple contexts for your function development. For example, configure two contexts for development:
+The Fn context stores configuration information about your functions and where your Docker images are stored. You can configure multiple contexts for your function development. For example, let's do the following:
 
-* For local development, you configure the Fn registry with an arbitrary value such as "fndemouser"
-* For cloud development, you configure the Fn registry to your Docker Hub user name.
+* For local development, configure the Fn registry with an arbitrary value such as "fndemouser". This will save any docker images locally.
+* For cloud development, configure a new Fn registry and store your images on Docker Hub.
 
 ## Before you Begin
 
-* Set aside about 15 minutes to complete this tutorial.
+* Set aside about 20 minutes to complete this tutorial.
 * Make sure the Fn server is up and running in your computer, see [Install Fn](../install/README.md) for more details.
 * Have your Docker Hub credentials handy.
+* Have a second computer or virtual machine you can run Fn server on.
 
 > As you make your way through this tutorial, look out for this icon.
 ![](images/userinput.png) Whenever you see it, it's time for you to
 perform an action.
 
+## Configure your Default Context
+First, set up your default context [as described in the install tutorial](https://github.com/fnproject/tutorials/blob/master/install/README.md#configure-your-context).
+
+To make sure your default Fn context is set correctly, list the contexts.
+
+![user input](images/userinput.png)
+>```
+> fn ls contexts
+>```
+```txt
+CURRENT NAME    PROVIDER  API URL                REGISTRY
+*       default default   http://localhost:8080  fndemouser
+```
+
+This shows that the default context is currently selected and the registry value is set to "fndemouser". Since `fndemouser` is just a string, your local Docker repository is used to store images.
+
 
 ## Create your Own Context
-At this point you must already have configured a default context that was created the first time you run the Fn CLI. You can create your own context for local development purposes.
+With the default context set, create your own context. To start with set the context for local development.
 
 For example:
 
