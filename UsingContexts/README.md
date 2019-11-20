@@ -25,6 +25,7 @@ To make sure your default Fn context is set correctly, list the contexts.
 >```
 > fn ls contexts
 >```
+
 ```txt
 CURRENT NAME    PROVIDER  API URL                REGISTRY
 *       default default   http://localhost:8080  fndemouser
@@ -42,70 +43,101 @@ For example:
 >```
 > fn create context my-local-ctx --api-url http://localhost:8080 --registry fnlocal
 >```
-```txt
+
+```yaml
 Successfully created context: my-local-ctx
 ```
 
-The `fn create context` command creates a new context that can be used to deploy an application. This command has options to define the provider, api url and registry.
+Here is a description of each command option.
 
-* --provider - You can define your own provider. In this example, notice that no provider was defined, then a default value is set.
-* --api-url  - It is the api address and port where your application is deployed. It can be a local server, as in this example, or you can use a remote server.
-* --registry - Name of your registry. For local development purposes you can define any name that makes sense to
- you. Also you can define your Docker Hub user name for a remote deploy.
+* `--provider` - The name of your repository provider. Leave with the value of "default". This is just a metadata field used to distinguish different Fn providers.
+* `--api-url`  - The api address and port of the Fn Server where your application is deployed. It can be a local server, as in this example, or you can use a remote server.
+* `--registry` - Name of your registry. For local development purposes you can define any name that makes sense to you. Any name that cannot be resolved on the network defaults to using your local Docker repository. If a URL to a repository like Docker Hub is assigned, Docker images are stored there.
 
-For each context in your Fn CLI, you have a configuration file in a yaml format. You can find the context configuration files in the `~/.fn/context` directory.
+List your contexts again to see your changes.
 
-Let's take a look to the `my-local-ctx.yaml` context file.
+![user input](images/userinput.png)
+>```
+> fn ls contexts
+>```
+
+```txt
+CURRENT NAME         PROVIDER  API URL                REGISTRY
+*       default      default   http://localhost:8080  fndemouser
+        my-local-ctx default   http://localhost:8080  fnlocal
+```
+
+### Fn Contexts Storage
+For each Fn context, you have a configuration file in a yaml format. You can find the context configuration files in the `~/.fn/contexts` directory.
+
+Let's take a look to the `my-local-ctx.yaml` context file:
 
 ![user input](images/userinput.png)
 >```
 > cat ~/.fn/contexts/my-local-ctx.yaml
 >```
-```txt
+
+```yaml
 api-url: http://localhost:8080
 provider: default
 registry: fnlocal
 ```
 
-Now let's take a look to the `default.yaml` context file.
+The `default.yaml` context file looks like this:
 
 ![user input](images/userinput.png)
 >```
 > cat ~/.fn/contexts/default.yaml
 >```
-```txt
+
+```yaml
 api-url: http://localhost:8080
 provider: default
 registry: fndemouser
 ```
 
-To create a new context, you can use the `fn create context` command or create a new configuration file using the yaml format in the `~/.fn/context` directory. Before you can use a context, it has to be specified as the default context.
+Alternatively to the `fn create context` command,  you can create a new configuration file using the yaml format shown and by placing the file in the `~/.fn/contexts` directory.
 
-Set `my-local-ctx` as the default context.
+### Switch to your New Context
+To use a context, you must select it. Set `my-local-ctx` as the current context.
 
 ![user input](images/userinput.png)
 >```
 > fn use context my-local-ctx
 >```
-```txt
+
+```yaml
 Now using context: my-local-ctx
 ```
 
-## Use Your Local Context
+List your contexts again to see your changes.
 
-To use the `my-local-ctx` context, start by creating a Node.js function, then create the application it belongs to, and finally deploy the application in the `my-local-ctx` context.
+![user input](images/userinput.png)
+>```
+> fn ls contexts
+>```
+
+```txt
+CURRENT NAME         PROVIDER  API URL                REGISTRY
+        default      default   http://localhost:8080  fndemouser
+*       my-local-ctx default     http://localhost:8080  fnlocal
+```
+
+The context you created is now ready for local deployment.
+
+
+## Deploy a Function Locally with your Context
+Let's deploy a simple a Node.js "Hello World!" function using our new context.
 
 
 ### Create Your Function
-
-First you need to create a simple `HelloWorld` function using `Node.js` as based language.
-
 In a terminal type the following:
 
 ![user input](images/userinput.png)
 >```
 > fn init --runtime node nodefn
 >```
+
 ```txt
 Creating function at: /nodefn
 Function boilerplate generated.
@@ -122,32 +154,33 @@ Go to your function directory.
 >```
 
 Notice this directory has several files.
-* func.js contains the generated Node function
-* func.yaml is the function configuration file and lists its properties such as schema, name, version, runtime, and entrypoint.
-* package.json specifies the Node.js dependecies required for this function.
+* `func.js` - contains the generated Node function.
+* `func.yaml` - is the function configuration file and lists its properties such as schema, name, version, runtime, and entrypoint.
+* `package.json` - specifies the Node.js dependecies required for this function.
+
 
 ### Create an Application
-An application provides structure and organization for multiple functions. Before you deploy your function, it has to be part of an application.
-
-To create an application, type the following:
+Let's create an application for our function. To create the application, type the following:
 
 ![user input](images/userinput.png)
 >```
 > fn create app nodeapp
 >```
+
 ```txt
 Successfully created app: nodeapp
 ```
 
 
 ### Deploy Your Function to a Local Server
-Deploy your function to your local Fn server. This is helpfull when you want to test your function before deploying it in a cloud server.
+Deploy your function to your local Fn server.
 
 ![user input](images/userinput.png)
 >```
 > fn deploy --app nodeapp --local
 >```
-```txt
+
+```yaml
 Deploying nodefn to app: nodeapp
 Bumped to version 0.0.2
 Building image fnlocal/nodefn:0.0.2 ................................
@@ -155,7 +188,7 @@ Updating function nodefn using image fnlocal/nodefn:0.0.2...
 Successfully created function: nodefn with fnlocal/nodefn:0.0.2
 ```
 
-**Note:** Fn is based on Docker and when you first run the `fn start` command the Fn server docker image (fnproject/fnserver) is downloaded and started. When you run the deploy command, a new image is created to hold your funcion and it resides on your computer. In this case, the function was packaged in the `fnlocal/nodefn:0.0.2` image.
+**Note:** Fn is based on Docker and when you first run the `fn start` command the Fn server docker image (fnproject/fnserver) is downloaded and started. When you run the deploy command, a new image is created to store your function and it resides on your computer. In this case, the function was packaged in the `fnlocal/nodefn:0.0.2` image.
 
 You may have a number of Docker images so use the following command to see only those created by `fnlocal`:
 
@@ -163,18 +196,19 @@ You may have a number of Docker images so use the following command to see only 
 >```
 > docker images | grep fnlocal
 >```
+
 ```txt
-REPOSITORY           TAG                 IMAGE ID            CREATED             SIZE
-fnlocal/nodefn       0.0.2               b33abfd56e02        6 minutes ago       75.5MB
+REPOSITORY      TAG     IMAGE ID        CREATED         SIZE
+fnlocal/nodefn  0.0.2   b33abfd56e02    6 minutes ago   75.5MB
 ```
 
 The Docker image resides only on your local machine. You cannot run it on a machine other than your own. If you want to make the Docker image available for other users, then you need to push it to a registry such as Docker Hub.
 
-## Push Your Image to Docker Hub
+## Push Your Images to Docker Hub
 A Docker registry is a system that stores Docker images. You can use Docker Hub to organize your Docker images into repositories. For example, a repository can have multiple versions of your image. By pushing your image to a Docker registry, you make your image public and accesible to other users and systems.
 
 ### Set Your Registry
-To use Docker Hub as your registry, log in Docker using your user name and password. You can use the GUI on some operating systems, or the command line:
+To use Docker Hub as your registry, log in Docker using your user name and password. You can use the GUI or the command line:
 
 ![user input](images/userinput.png)
 >```
@@ -189,29 +223,33 @@ Configure a credential helper to remove this warning. See
 https://docs.docker.com/engine/reference/commandline/login/#credentials-store
 ```
 
-Switch to your default context:
+Update the registry value to your Docker account for your context:
 
 ![user input](images/userinput.png)
 >```
-> fn use context default
+> fn update context registry <your-docker-id>
 >```
+
 ```txt
-Now using context:default
+Current context updated registry with <your-docker-id>
 ```
 
-Update the registry value to your Docker account:
+List your contexts again to see your changes.
 
 ![user input](images/userinput.png)
 >```
-> fn update context registry <your-docker-username>
+> fn ls contexts
 >```
+
 ```txt
-Current context updated registry with <your-docker-username>
+CURRENT NAME         PROVIDER   API URL                 REGISTRY
+        default      default    http://localhost:8080   fndemouser
+*       my-local-ctx default    http://localhost:8080   <docker-id>
 ```
 
-### Deploy Your Application to a Remote Server
 
-During deployment, Fn puts your function in the specified application. Then your function is packaged into an image and uploaded to Docker Hub. In the deploy command you can add the `--verbose` option to get more detail of what is happening with your function during deployment time.
+### Re-deploy your Function
+Fn puts your function in the specified application. This time, your function is packaged into an image and uploaded to Docker Hub. In the deploy command, add the `--verbose` option to get more detailed information at deployment time.
 
 ![user input](images/userinput.png)
 >```
@@ -265,49 +303,92 @@ Updating function nodefn using image <your-docker-username>/nodefn:0.0.3...
 
 Note that every time you redeploy, a new image and version are created. Since you defined your Docker Hub account in the registry property of the default context, this time the image is uploaded to Docker Hub.
 
-![user input](images/userinput.png)
-Go to your Docker Hub account and confirm your image was uploaded.
-![Docker Hub image](images/registry.png)
-
 List the images in your local machine
 
 ![user input](images/userinput.png)
 >```
 > docker images | grep nodefn
 >```
+
 ```txt
-REPOSITORY           		TAG                 IMAGE ID            CREATED             SIZE
-fnlocal/nodefn       		0.0.2               b33abfd56e02        9 minutes ago       75.5MB
-<your_docker_repository>/nodefn  0.0.3		    6b4fc7b57c9e        6 minutes ago       75.5MB
+REPOSITORY          TAG     IMAGE ID        CREATED         SIZE
+fnlocal/nodefn      0.0.2   b33abfd56e02    9 minutes ago   75.5MB
+<docker_id>/nodefn  0.0.3   6b4fc7b57c9e    6 minutes ago   75.5MB
 ```
 
-(**Question:** What should the user expect to see?  Put that here.)
+![user input](images/userinput.png)
+Go to your Docker Hub account and confirm your image was uploaded.
+![Docker Hub image](images/registry.png)
+
+You see a new copy of the node function image stored in your repository.
 
 
-## Use of an Existing Image
+## Deploy your Function to a Second Machine
 
 In case you want to distribute your image to other developers or if you want to use it in another machine, you can make use of the images deployed in Docker Hub. After you have your image in a Docker Hub registry, you can pull it to any machine. In this part, you deploy a function on a new machine using the image that you deployed and pushed to the Docker Hub registry before.
 
-### Setup the New Machine
 
-Before you begin make sure Fn server is up and running in the new machine, see [Install Fn](../install/README.md) for more details. Then copy the "my-local-ctx" yaml file from the old machine to the new machine. Remember you can find de context files in the "~/.fn/contexts/" directory. Finally, make sure you set the "my-local-ctx" context as default.
+### Setup the New Machine
+Setup Fn server on a new machine and make sure it is up and running, see [Install Fn](../install/README.md) for more details.
+
+List your contexts again to make sure your are still using the context your created.
 
 ![user input](images/userinput.png)
 >```
-> fn use context my-local-ctx
+> fn ls contexts
 >```
+
 ```txt
-Now using context: my-local-ctx
+CURRENT NAME         PROVIDER   API URL                 REGISTRY
+        default      default    http://localhost:8080   fndemouser
+*       my-local-ctx default    http://localhost:8080   <docker-id>
 ```
 
-Also you have to create your application in the new machine.
+Update the API-URL to point to the new server.
 
 ![user input](images/userinput.png)
 >```
-> fn create app nodeapp
+> fn update context api-url http://macpro:8080
+>```
+
+```txt
+Current context updated api-url with http://macpro:8080
+```
+
+List your contexts again to see your changes.
+
+![user input](images/userinput.png)
+>```
+> fn ls contexts
+>```
+
+```txt
+CURRENT NAME         PROVIDER   API URL                 REGISTRY
+        default      default    http://localhost:8080   fndemouser
+*       my-local-ctx default    http://newhost:8080     <docker-id>
+```
+
+Now when you get a list of the apps, you see the apps on the new server.
+
+![user input](images/userinput.png)
+>```
+> fn ls apps
+>```
+
+```txt
+NAME        ID
+helloapp    01DPA5XMV4NG8G00GZJ000000
+java-app    01DJ61KDV7NG8G00GZJ0000001
+```
+
+Create your application on the new machine.
+
+![user input](images/userinput.png)
+>```
+> fn create app nodeapp2
 >```
 ```txt
-Successfully created app: nodeapp
+Successfully created app: nodeapp2
 ```
 
 ### Invoke your Function
